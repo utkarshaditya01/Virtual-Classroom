@@ -1,0 +1,362 @@
+swagger: '2.0'
+info:
+  title: Classroom API
+  description: Virtual Classroom for tutor and students.
+  termsOfService: https://www.google.com/policies/terms/
+  contact:
+    email: contact@snippets.local
+  license:
+    name: BSD License
+  version: v1
+host: 127.0.0.1:8000
+schemes:
+  - http
+basePath: /
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  api_key:
+    type: apiKey
+    in: header
+    name: Authorization
+security:
+  - api_key: []
+paths:
+  /api/token/:
+    post:
+      operationId: api_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TokenObtainPair'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenObtainPair'
+      tags:
+        - api
+    parameters: []
+  /api/token/refresh/:
+    post:
+      operationId: api_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TokenRefresh'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenRefresh'
+      tags:
+        - api
+    parameters: []
+  /assignment/create:
+    post:
+      operationId: assignment_create_create
+      summary: Create Assignment
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Assignment'
+      responses:
+        '200':
+          description: Successfully Created Assignment
+        '403':
+          description: Only tutors can create assignment.
+        '404':
+          description: Bad Request
+      tags:
+        - assignment
+    parameters: []
+  /assignment/feed:
+    get:
+      operationId: assignment_feed_list
+      summary: Assignment Feed
+      description: ''
+      parameters:
+        - name: publishedAt
+          in: query
+          type: string
+          enum:
+            - ONGOING
+            - SCHEDULED
+        - name: status
+          in: query
+          description: Only for students, does not filter for tutor.
+          type: string
+          enum:
+            - ALL
+            - PENDING
+            - OVERDUE
+            - SUBMITTED
+      responses:
+        '200':
+          description: ''
+          schema:
+            title: Assignment Feed
+            type: array
+            items:
+              required:
+                - tutor
+                - description
+                - published
+                - deadline
+              type: object
+              properties:
+                tutor:
+                  title: Name & email of Tutor
+                  type: string
+                description:
+                  title: Assignment Description
+                  type: string
+                published:
+                  title: Published Date
+                  type: string
+                  format: date
+                deadline:
+                  title: Submission Deadline
+                  type: string
+                  format: date
+                all_submissions:
+                  title: Submissions
+                  description: Available Only for Tutors
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      remark:
+                        title: Remark
+                        type: string
+                      status:
+                        title: Remark
+                        type: string
+                        enum:
+                          - Pending
+                          - Submitted
+                      submitted_on:
+                        title: Submitted on
+                        type: string
+                        format: date
+                      student:
+                        title: Student Name & email
+                        type: string
+                my_submission:
+                  title: My Submission
+                  description: Only for student
+                  type: object
+                  properties:
+                    remark:
+                      title: Remark
+                      type: string
+                    status:
+                      title: Remark
+                      type: string
+                      enum:
+                        - Pending
+                        - Submitted
+                    submitted_on:
+                      title: Submitted on
+                      type: string
+                      format: date
+      tags:
+        - assignment
+    parameters: []
+  /assignment/{assignment_id}/submit:
+    post:
+      operationId: assignment_submit_create
+      summary: Create Submission
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SubmissionUpdate'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/AssignmentDetailStudent'
+        '403':
+          description: Only students can submit.
+        '404':
+          description: Bad Request
+      tags:
+        - assignment
+    parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        type: string
+  /assignment/{id}:
+    put:
+      operationId: assignment_update
+      summary: Update Assignment
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Assignment'
+      responses:
+        '200':
+          description: Successfully Updated Assignment
+        '403':
+          description: Only tutors can update assignment.
+        '404':
+          description: Bad Request
+      tags:
+        - assignment
+    delete:
+      operationId: assignment_delete
+      summary: Delete Assignment
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: Successfully Deleted Assignment
+        '404':
+          description: Bad Request
+      tags:
+        - assignment
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /assignment/{id}/details:
+    post:
+      operationId: assignment_details_create
+      summary: Assignment Details
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/AssignmentDetailStudent'
+        '404':
+          description: No such assignment
+      tags:
+        - assignment
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+definitions:
+  TokenObtainPair:
+    required:
+      - username
+      - password
+    type: object
+    properties:
+      username:
+        title: Username
+        type: string
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        minLength: 1
+  TokenRefresh:
+    required:
+      - refresh
+    type: object
+    properties:
+      refresh:
+        title: Refresh
+        type: string
+        minLength: 1
+      access:
+        title: Access
+        type: string
+        readOnly: true
+  Student:
+    required:
+      - username
+    type: object
+    properties:
+      username:
+        title: Username
+        type: string
+        maxLength: 100
+        minLength: 1
+  Assignment:
+    required:
+      - description
+      - published
+      - deadline
+      - students
+    type: object
+    properties:
+      description:
+        title: Description
+        type: string
+        minLength: 1
+      published:
+        title: Published
+        type: string
+        format: date-time
+      deadline:
+        title: Deadline
+        type: string
+        format: date-time
+      students:
+        type: array
+        items:
+          $ref: '#/definitions/Student'
+  SubmissionUpdate:
+    required:
+      - remark
+    type: object
+    properties:
+      remark:
+        title: Remark
+        type: string
+        minLength: 1
+  AssignmentDetailStudent:
+    required:
+      - description
+      - published
+      - deadline
+    type: object
+    properties:
+      tutor:
+        title: Tutor
+        type: string
+        readOnly: true
+      description:
+        title: Description
+        type: string
+        minLength: 1
+      published:
+        title: Published
+        type: string
+        format: date-time
+      deadline:
+        title: Deadline
+        type: string
+        format: date-time
+      my_submission:
+        title: My submission
+        type: string
+        readOnly: true
