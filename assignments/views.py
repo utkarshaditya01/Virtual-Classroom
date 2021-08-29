@@ -152,8 +152,7 @@ class AssigmentFeed(views.APIView):
         print(request.user)
         status = request.GET.get('status')
         if hasattr(request.user, 'student') and request.user.student:
-            assignments = Assignment.objects.filter(
-                submission__student=request.user.student)
+            assignments = Assignment.objects.all()
         elif hasattr(request.user, 'tutor') and request.user.tutor:
             assignments = Assignment.objects.filter(tutor=request.user.tutor)
         else:
@@ -169,12 +168,13 @@ class AssigmentFeed(views.APIView):
                 pass
             elif status == 'PENDING':
                 assignments = assignments.filter(
-                    submission__status='P', deadline__gt=datetime.now())
+                    submission__status='P', submission__student=request.user.student, deadline__gt=datetime.now())
+                print(assignments)
             elif status == 'OVERDUE':
                 assignments = assignments.filter(
-                    submission__status='P', deadline__lt=datetime.now())
+                    submission__status='P', submission__student=request.user.student, deadline__lt=datetime.now() )
             elif status == 'SUBMITTED':
-                assignments = assignments.filter(submission__status='S')
+                assignments = assignments.filter(submission__status='S', submission__student=request.user.student)
 
         if hasattr(request.user, 'tutor') and request.user.tutor:
             serializer = AssignmentDetailTutorSerializer(
