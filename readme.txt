@@ -33,6 +33,7 @@ Swagger YAML file is there in the folder, you can just run the docs page since a
 ------------------------------------------------------------------------------------------------------------
 BONUS
 
+Deployed - https://virtualclassroomutkarsh.herokuapp.com/docs/
 
-
-
+NOTE : While creating student or tutor use the following password -> "pbkdf2_sha256$260000$9i1UafjXzqDhLdEW3Wg5CW$w3Vu5mlX2NAV3d6KF4DO/s9Z8ae+s2Dyue29YLmdJDg="
+since its salted hash of "admin"
