@@ -35,5 +35,7 @@ BONUS
 
 Deployed - https://virtualclassroomutkarsh.herokuapp.com/docs/
 
+Attempted Notification System
+
 NOTE : While creating student or tutor use the following password -> "pbkdf2_sha256$260000$9i1UafjXzqDhLdEW3Wg5CW$w3Vu5mlX2NAV3d6KF4DO/s9Z8ae+s2Dyue29YLmdJDg="
 since its salted hash of "admin"
